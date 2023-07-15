@@ -1,0 +1,145 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --dark: #131415;
+  --dark-alt: #343a40;
+  --light: #e7e9ea;
+  --light-alt: #b5b5cc;
+}
+
+html,
+body {
+  background-color: var(--dark);
+  direction: rtl;
+  font-family: "Noto Naskh Arabic", serif;
+}
+
+.surahs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.surah {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 15px;
+  border: 1px solid var(--dark-alt);
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.surah > div {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: 0.3s;
+}
+
+.surah > div .number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  transform: rotate(45deg);
+  background-color: #343a40;
+}
+
+.surah > div .number small {
+  font-size: 14px;
+  font-weight: 500;
+  transform: rotate(-45deg);
+  transition: 0.3s;
+}
+
+.surah > div .name {
+  font-size: 20px;
+  color: #ccd0d3;
+}
+
+.surah .ayahs {
+  color: #777;
+  font-weight: 600;
+  font-size: 18px;
+  transition: 0.3s;
+}
+
+.surah:hover {
+  border-color: var(--light-alt);
+}
+
+.surah:hover .number {
+  background-color: var(--light-alt);
+  color: var(--dark-alt);
+}
+
+.surah:hover .ayahs {
+  color: var(--light-alt);
+}
+
+.ayah-number {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #b5b5cc;
+  color: #b5b5cc;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px;
+}
+
+.ayah-number::before,
+.ayah-number::after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid #b5b5cc;
+  cursor: pointer;
+}
+
+.ayah-number::before {
+  transform: rotate(45deg);
+}
+
+.menu-link {
+  @apply flex items-center gap-2 hover:bg-[#131415] px-2 py-2 cursor-pointer rounded-lg transition-colors;
+}
+
+.controller-button {
+  @apply cursor-pointer transition-colors flex items-center justify-center hover:bg-[#131415] w-[36px] h-[36px] rounded-full;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(211, 205, 205);
+}
