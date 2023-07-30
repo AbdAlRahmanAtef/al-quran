@@ -1,8 +1,21 @@
 import React from "react";
-import { BiLoader } from "react-icons/bi";
 
-const Loader = () => {
-  return <BiLoader size={18} className="animate-spin" />;
+const Loader = ({ count, height, display }) => {
+  console.log(height);
+  return (
+    <div
+      className={`${
+        display === "grid" ? "display-grid" : "flex flex-col gap-1"
+      }`}
+    >
+      {Array(count).map((i, index) => (
+        <div
+          key={index}
+          className={`animate-pulse h-[${height}] w-full bg-[#343a40]`}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default Loader;

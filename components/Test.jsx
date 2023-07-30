@@ -49,6 +49,22 @@ const Test = () => {
     setCurrentTime(0);
   }, [currentTrack]);
 
+  // const pages = Pages
+  //   ? Object.entries(
+  //       Pages?.ayahs.reduce((acc, obj) => {
+  //         const { page } = obj;
+  //         if (!acc[page]) {
+  //           acc[page] = [];
+  //         }
+  //         acc[page].push(obj);
+  //         return acc;
+  //       }, {})
+  //     ).map(([pageNumber, ayahs]) => ({
+  //       page: parseInt(pageNumber, 10),
+  //       ayahs,
+  //     }))
+  //   : [];
+
   const calculateTotalDuration = () => {
     let sum = 0;
     for (let i = 0; i < audioFiles.length; i++) {

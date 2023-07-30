@@ -1,13 +1,14 @@
 "use client";
 
 import { convertNumbers } from "@/utils/convertNumbers";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import AyahWord from "./AyahWord";
 import { AudioPlayerContext } from "@/context/AudioContext";
 
 const Page = ({ page }) => {
   const { currentAyah, setCurrentAyah, setIsPlaying } =
     useContext(AudioPlayerContext);
+
   const handleWordClick = (ayahNumber) => {
     setCurrentAyah(ayahNumber - 1);
     setIsPlaying(true);
@@ -15,33 +16,31 @@ const Page = ({ page }) => {
 
   return (
     <div className="border-b border-[#343a40] py-6 max-w-[450px] mx-auto">
-      {page.ayahs?.map((ayah, idx) => (
+      {page?.verses?.map((ayah, idx) => (
         <span
           key={idx}
+          id={`startingVerse-${ayah?.verse_key.split(":")[1]}`}
           className={`${
-            currentAyah === idx ? "bg-[#343a4064]" : "bg-transparent"
+            +ayah?.verse_key.split(":")[1] === currentAyah + 1
+              ? "bg-[#343a4064]"
+              : "bg-transparent"
           } transition-colors`}
         >
-          {ayah.text
-            .split(" ")
-            // .filter((word) => word !== "بِسۡمِ")
-            // .filter((word) => word !== "ٱللَّهِ")
-            // .filter((word) => word !== "ٱلرَّحۡمَـٰنِ")
-            // .filter((word) => word !== "ٱلرَّحِیمِ")
-            .map((word, idx) => (
-              <AyahWord
-                key={idx}
-                word={word}
-                handlePlay={() => handleWordClick(ayah?.numberInSurah)}
-              />
-            ))}
+          {ayah.text_uthmani.split(" ").map((word, idx) => (
+            <AyahWord
+              key={idx}
+              word={word}
+              ayah={ayah}
+              handlePlay={() => handleWordClick(ayah?.verse_key.split(":")[1])}
+            />
+          ))}
           <span className="ayah-number">
-            {`${convertNumbers(ayah.numberInSurah)}`}
+            {`${convertNumbers(ayah.verse_key.split(":")[1])}`}
           </span>
         </span>
       ))}
-      <p className="text-xl text-[#777]">{` ﴿${convertNumbers(
-        page.page
+      <p className="text-xl text-[#777] mt-4">{` ﴿${convertNumbers(
+        page.meta.filters.page_number
       )}﴾ `}</p>
     </div>
   );

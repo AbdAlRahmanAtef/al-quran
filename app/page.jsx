@@ -1,13 +1,15 @@
 "use client";
 
 import Landing from "@/components/Landing";
-import Surah from "@/components/Surah";
 import axios from "axios";
+import Loader from "@/components/Loader";
 import React, { useEffect, useState } from "react";
+import Surah from "@/components/Surah";
 
 const Home = () => {
   const [surahs, setSurahs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
   const getData = async () => {
     try {
       setIsLoading(true);
@@ -23,6 +25,8 @@ const Home = () => {
     }
   };
 
+  console.log(surahs);
+
   useEffect(() => {
     getData();
   }, []);
@@ -31,15 +35,17 @@ const Home = () => {
     <div>
       {" "}
       <Landing />
-      <div>
-        {surahs?.length > 0 && (
-          <div className="surahs-list">
+      {isLoading ? (
+        <Loader count={10} height="100px" display="grid" />
+      ) : (
+        surahs?.length > 0 && (
+          <div className="display-grid">
             {surahs?.map((item) => (
               <Surah key={item.id} surah={item} />
             ))}
           </div>
-        )}
-      </div>
+        )
+      )}
     </div>
   );
 };

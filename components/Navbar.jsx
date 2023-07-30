@@ -10,16 +10,7 @@ import logo from "@/assets/logo.jpeg";
 
 const Navbar = () => {
   const [width, setWidth] = useState("");
-  const [show, setShow] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const [currentNumber, setCurrentNumber] = useState("");
-  const [isTransfering, setIsTransfering] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [showSaveSign, setShowSaveSign] = useState(false);
-
-  const searchInputRef = useRef();
-  const searchIconRef = useRef();
-  const searchFormRef = useRef();
 
   useEffect(() => {
     let lastScroll = 0;
@@ -38,71 +29,37 @@ const Navbar = () => {
         setHidden(false);
         lastScroll = currentScroll;
       }
+
+      if (typeof window !== "undefined") {
+        const height =
+          document.documentElement.scrollHeight -
+          document.documentElement.clientHeight;
+
+        window.onscroll = () => {
+          const top = document.documentElement.scrollTop;
+
+          setWidth(`${(top / height) * 100}%`);
+        };
+      }
     });
 
-    // Cleanup the event listener when the component unmounts
     return () => {
       window.removeEventListener("scroll", () => {});
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (router.pathname.slice(1, 7) === "detail") {
-  //     setCurrentNumber(router.query.id);
-  //     setShowSaveSign(true);
-  //   } else {
-  //     setShowSaveSign(false);
-  //   }
-  // }, [router]);
-
-  useEffect(() => {
-    if (isTransfering) {
-      router.push(`/detail/${currentSurah}`);
-    }
-  }, [isTransfering]);
-
-  // useEffect(() => {
-  //   const handler = (e) => {
-  //     if (show && searchFormRef && !searchFormRef.current.contains(e.target)) {
-  //       setShow(false);
-  //     } else if (searchIconRef && searchIconRef.current.contains(e.target)) {
-  //       setShow((prev) => !prev);
-  //     }
-  //   };
-
-  //   document.addEventListener("mousedown", handler);
-
-  //   return () => {
-  //     document.removeEventListener("mousedown", handler);
-  //   };
-  // }, [show]);
-
-  if (typeof window !== "undefined") {
-    const height =
-      document.documentElement.scrollHeight -
-      document.documentElement.clientHeight;
-
-    window.onscroll = () => {
-      const top = document.documentElement.scrollTop;
-
-      setWidth(`${(top / height) * 100}%`);
-    };
-  }
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (inputValue) {
-      const searchTerm = surahsNames.filter((surah) =>
-        surah.name.trim().includes(inputValue.trim())
-      );
-      router.push(`/detail/${searchTerm[0].number}`);
-      setInputValue("");
-      setShow(false);
-    }
-  };
-
   return (
-    <div className="bg-[#343a40] flex py-2 px-4 justify-between">
+    <div
+      className={`fixed w-full right-0 top-0 z-20 transition-transform ${
+        !hidden ? "translate-y-0" : "translate-y-[-100%]"
+      } bg-[#343a40] flex py-2 px-4 justify-between`}
+    >
+      {/* Progress bar */}
+      {/* <div
+        className={`fixed h-[2px] rounded-sm w-[10px] right-0 z-20 transition-all ${
+          hidden ? "top-10" : "top-[76px]"
+        } bg-[#ccc]`}
+      ></div> */}
       <Link href="/">
         <Image
           src={logo}
@@ -112,12 +69,13 @@ const Navbar = () => {
           className="rounded-full w-[60px] h-[60px]"
         />
       </Link>
-      <form className="bg-[#131415] px-4 py-2 rounded-full flex items-center ">
-        <input
-          type="text"
-          placeholder="أبحث عن صورة"
-          className="bg-inherit outline-none border-none text-[#adb7b8] text-lg hidden md:block"
-        />
+      <Link
+        href="/search"
+        className="bg-[#131415] px-4 hover:opacity-70 transition-opacity py-0 rounded-lg h-[54px] min-w-[200px] flex items-center justify-between "
+      >
+        <p className="bg-inherit outline-none border-none text-[#adb7b8] text-lg">
+          أبحث عن صورة
+        </p>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -129,7 +87,7 @@ const Navbar = () => {
             d="M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zm-8 6a8 8 0 1 1 14.32 4.906l5.387 5.387a1 1 0 0 1-1.414 1.414l-5.387-5.387A8 8 0 0 1 2 10z"
           ></path>
         </svg>
-      </form>
+      </Link>
     </div>
   );
 };

@@ -1,36 +1,50 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import AudioPlayer from "@/components/AudioPlayer";
 import Basmala from "@/components/Basmala";
 import Loader from "@/components/Loader";
 import Page from "@/components/Page";
-import Test from "@/components/Test";
 import { AudioPlayerContext } from "@/context/AudioContext";
 import { convertNumbers } from "@/utils/convertNumbers";
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { BsInfoCircleFill, BsFillPlayFill, BsBook } from "react-icons/bs";
 import { IoIosPause } from "react-icons/io";
+import { BiLoader } from "react-icons/bi";
+import { useSearchParams } from "next/navigation";
 
 const Surah = ({ params }) => {
-  const [surah, setSurah] = useState();
+  const [pages, setPages] = useState([]);
+  const [surahInfo, setSurahInfo] = useState();
+  const [currentPage, setCurrentPage] = useState();
   const [currentTrack, setCurrentTrack] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  const [show, setShow] = useState(false);
-  const [surahNumber, setSurahNumber] = useState();
 
-  const { currentAyah, setCurrentAyah, isPlaying, setIsPlaying } =
+  const searchParams = useSearchParams();
+  const startingVerse = searchParams.get("startingVerse");
+  const verseRef = useRef(null);
+
+  const { isPlaying, setIsPlaying, setShowAudioPlayer } =
     useContext(AudioPlayerContext);
 
-  const getSurah = async () => {
+  const handlePlay = () => {
+    setShowAudioPlayer(true);
+    setIsPlaying(true);
+  };
+
+  const getSurahInfo = async () => {
     try {
       setIsLoading(true);
-      const { data } = await axios.get(
-        `https://api.alquran.cloud/v1/surah/${params.id}`
-      );
-
-      setSurah(data.data);
+      await fetch(
+        `https://api.quran.com/api/v4/chapters/${params.id}?language=en`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setSurahInfo(data.chapter);
+          setCurrentPage(data.chapter.pages[0]);
+        });
     } catch (error) {
       console.log(error);
     } finally {
@@ -38,48 +52,80 @@ const Surah = ({ params }) => {
     }
   };
 
+  const getPage = async () => {
+    try {
+      await fetch(
+        `https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${params.id}&page_number=${currentPage}`
+      )
+        .then((res) => res.json())
+        .then((data) => setPages((prev) => [...prev, data]));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    getSurah();
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 1 >=
+        document.documentElement.scrollHeight - 200
+      ) {
+        setCurrentPage((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
-  const pages = surah
-    ? Object.entries(
-        surah?.ayahs.reduce((acc, obj) => {
-          const { page } = obj;
-          if (!acc[page]) {
-            acc[page] = [];
-          }
-          acc[page].push(obj);
-          return acc;
-        }, {})
-      ).map(([pageNumber, ayahs]) => ({
-        page: parseInt(pageNumber, 10),
-        ayahs,
-      }))
-    : [];
+  useEffect(() => {
+    getSurahInfo();
+  }, [params.id]);
 
-  return isLoading ? (
-    <div>Loading...</div>
-  ) : (
-    <div className="max-w-[450px] mx-auto text-center mt-10">
-      <p className="text-[#ccd0d3] text-4xl font-black">{surah?.name}</p>
-      <Basmala />
+  useEffect(() => {
+    const isMore = currentPage <= surahInfo?.pages[1] ? true : false;
+
+    if (surahInfo && isMore) {
+      getPage();
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    const element = document.getElementById(`startingVerse-${startingVerse}`);
+
+    if (!element) {
+      return;
+    }
+    console.log({ element });
+    element.scrollIntoView({ behavior: "smooth" });
+  }, [startingVerse]);
+
+  return (
+    <div className="max-w-[450px] mx-auto text-center mt-[140px]">
+      <p className="text-[#ccd0d3] text-4xl font-black">
+        {`سورة ${surahInfo?.name_arabic} `}
+      </p>
+      {surahInfo?.bismillah_pre && <Basmala />}
       <div className="flex justify-between items-center text-[#ccd0d3] mb-5">
         {isPlaying ? (
           <span
             className="flex px-4 py-2 items-center gap-1 rounded-full text-[#2ca4ab] hover:bg-[#2ca5ab81] transition-colors cursor-pointer"
             onClick={() => setIsPlaying(false)}
           >
-            {isLoading ? <Loader /> : <IoIosPause size={22} />}
+            {isLoading ? (
+              <BiLoader size={18} className="animate-spin" />
+            ) : (
+              <IoIosPause size={22} />
+            )}
             إيقاف الصوت
           </span>
         ) : (
           <span
             className="flex px-4 py-2 items-center gap-1 rounded-full text-[#cdd1d4] hover:bg-[#cdd1d44c]  cursor-pointer transition-colors"
-            onClick={() => {
-              setShow(true);
-              setIsPlaying(true);
-            }}
+            onClick={handlePlay}
           >
             <BsFillPlayFill size={22} />
             تشغيل الصوت
@@ -98,40 +144,47 @@ const Surah = ({ params }) => {
         } p-6 border  border-[#e7e9ea] rounded-md text-right transition-all`}
       >
         <p className="text-[#ccd0d3] text-xl font-semibold mb-4">
-          أسم السورة: <span className="text-[#777]">{surah?.name}</span>
+          أسم السورة:{" "}
+          <span className="text-[#777]">{surahInfo?.name_arabic}</span>
         </p>
         <p className="text-[#ccd0d3] text-xl font-semibold mb-4">
           عدد الأيات:{" "}
           <span className="text-[#777]">
-            {convertNumbers(surah?.numberOfAyahs)} آيات
+            {convertNumbers(surahInfo?.verses_count)} آيات
           </span>
         </p>
         <p className="text-[#ccd0d3] text-xl font-semibold mb-4">
           رقم السورة:{" "}
-          <span className="text-[#777]">{convertNumbers(surah?.number)}</span>
+          <span className="text-[#777]">{convertNumbers(surahInfo?.id)}</span>
         </p>
         <p className="text-[#ccd0d3] text-xl font-semibold mb-4">
           المنزل:{" "}
           <span className="text-[#777]">
-            {surah?.revelationType === "Medinan" ? "مدنية" : "مكية"}
+            {surahInfo?.revelation_place === "medinan" ? "مدنية" : "مكية"}
           </span>
         </p>
       </div>
-      {pages.map((page) => (
-        <Page
-          key={page.page}
-          page={page}
-          setCurrentTrack={setCurrentTrack}
-          currentTrack={currentTrack}
-        />
-      ))}
+      {isLoading ? (
+        <div className="mb-10">
+          <Loader count={16} type={"surahInfo"} />
+        </div>
+      ) : (
+        pages.map((page, idx) => (
+          <>
+            <Page
+              key={idx}
+              page={page}
+              setCurrentTrack={setCurrentTrack}
+              currentTrack={currentTrack}
+            />
+          </>
+        ))
+      )}
 
       <AudioPlayer
-        name={surah?.name}
-        ayahsNumber={surah?.numberOfAyahs}
-        show={show}
-        setShow={setShow}
-        fileName={surah?.number}
+        name={surahInfo?.name}
+        ayahsNumber={surahInfo?.numberOfAyahs}
+        fileName={surahInfo?.number}
         surahId={params.id}
       />
     </div>

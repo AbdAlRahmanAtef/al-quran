@@ -8,7 +8,7 @@ const Basmala = () => {
       height="50"
       viewBox="0 0 176 36"
       overflow="inherit"
-      className="mx-auto text-center my-10"
+      className="mx-auto text-center mt-[50px] mb-10"
     >
       <switch>
         <g>
